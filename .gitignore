@@ -6,3 +6,6 @@ SETUP_KERNEL.md
 # Environment variables
 .env
 .env.local
+
+# Archive folder
+data/archive/
