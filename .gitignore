@@ -2,3 +2,7 @@ Project Overview.docx
 venv/
 A General Introduction to the E-utilities - Entrez Programming Utilities Help - NCBI Bookshelf.url
 SETUP_KERNEL.md
+
+# Environment variables
+.env
+.env.local
