@@ -18,26 +18,25 @@ The primary goal is to automate the discovery and documentation of bioactive pep
 
 ```
 uniprot/
-├── UniProt Peptide Search.ipynb    # Main Jupyter notebook - demo workflow
+├── UniProt Peptide Search.ipynb    # Main Jupyter notebook - complete workflow
 ├── requirements.txt                 # Python dependencies
 ├── README.md                        # This file
-├── Project Overview.docx            # Detailed project documentation
 │
 ├── data/                            # Output data files
-│   ├── exported_data.tsv           # MBPDB exported data
-│   ├── reff_merged_final_df.csv    # Peptides with references
-│   ├── no_reff_merged_final_df.csv # Peptides without references
-│   └── *.csv                        # Various processed datasets
+│   ├── exported_data.tsv           # MBPDB exported data (input for comparison)
+│   └── _novel_peptides_for_addition_to_MBPDB_*.csv
+│                                   # Generated output files with novel peptides
+│                                   # (timestamped: YYYYMMDD_HHMMSS format)
 │
-├── protein_lists/                    # Protein ID lists
+├── protein_lists/                   # Protein ID lists (input files)
 │   ├── HumanMilkProteinDatabase_v2.fasta
 │   ├── CowMilkProteinDatabase_v2.fasta
-│   └── *.tsv, *.txt                 # Additional protein lists
+│   ├── hummbpdbchec.tsv            # Human MBPDB check list
+│   ├── sheep milk.tsv              # Sheep milk protein list
+│   ├── cows milk.txt               # Cow milk protein list
+│   └── protein_header.txt          # Protein header reference
 │
-├── xml_examples/                    # Example XML files from UniProt/PubMed
-│   └── *.xml                        # Sample API responses
-│
-└── venv/                            # Python virtual environment
+└── venv/                            # Python virtual environment (optional)
 ```
 
 ## Installation
@@ -66,21 +65,21 @@ uniprot/
    pip install -r requirements.txt
    ```
 
-4. **Configure API credentials (optional):**
-   - For OpenAI API (if using GPT functionality), create a `.env` file:
+4. **Configure API credentials:**
+   - Create a `.env` file in the project root with:
      ```
      OPENAI_API_KEY=your_api_key_here
+     PUBMED_EMAIL=your_email@example.com
+     OPENAI_MODEL=gpt-4o-mini  # Optional, defaults to gpt-4o-mini
      ```
-   - For PubMed API, set your email in the notebook:
-     ```python
-     Entrez.email = "your_email@example.com"
-     ```
+   - The notebook automatically loads these from the `.env` file using `python-dotenv`
+   - **Note**: OpenAI API key is required for GPT-based bioactivity classification
 
 ## Usage
 
-### Running the Demo Notebook
+### Running the Notebook
 
-The main workflow is demonstrated in `UniProt Peptide Search.ipynb`:
+The complete workflow is implemented in `UniProt Peptide Search.ipynb`:
 
 1. **Open the notebook:**
    ```bash
@@ -89,140 +88,45 @@ The main workflow is demonstrated in `UniProt Peptide Search.ipynb`:
    jupyter lab "UniProt Peptide Search.ipynb"
    ```
 
-2. **Execute cells sequentially:**
-   - Cell 1-2: Install packages and import libraries
-   - Cell 3-12: Define core functions for UniProt/PubMed data extraction
-   - Cell 13-14: Load protein lists (human/cow milk proteins)
-   - Cell 15: Execute search on protein list
-   - Cell 16: Merge peptide and reference data
-   - Cell 17: Fetch PubMed details (abstracts, titles, authors, DOIs)
-   - Cell 18+: Data exploration, export, and analysis
-
-### Key Functions
-
-#### UniProt Functions
-- `fetch_protein_info(protein_id)`: Fetches protein data from UniProt API
-- `extract_peptide_and_function(data, protein_id)`: Extracts peptide features and functions
-- `extract_references(data, protein_id)`: Extracts reference metadata
-- `associate_peptide_with_function()`: Links peptides with their biological functions
-
-#### PubMed Functions
-- `fetch_details(row, row_num, total_rows)`: Retrieves abstracts, titles, authors, and DOIs from PubMed
-
-#### Data Processing
-- `process_species_data(protein_ids_list)`: Processes a list of protein IDs and returns DataFrames
-- `update_associated_function(row)`: Updates associated functions from non-associated functions
-- `print_critical_info(df, df_name)`: Prints summary statistics for DataFrames
+2. **Execute cells sequentially** from top to bottom. The notebook includes:
+   - UniProt API functions for fetching protein and peptide data
+   - PubMed API functions for retrieving abstracts and metadata
+   - Data processing and merging functions
+   - GPT-4 classification functions for bioactivity assessment
+   - MBPDB matching functions to identify novel peptides
 
 ## Key Features
 
-### ✅ Completed Features
+### ✅ Completed
 
-- **UniProt API Integration**: Automated queries for protein metadata, peptide sequences, and functions
-- **PubMed API Integration**: Automated retrieval of abstracts, titles, authors, and DOIs
-- **Data Extraction**: Automated extraction of:
-  - Peptide sequences and intervals
-  - Protein names and descriptions
-  - Biological functions (associated and non-associated)
-  - Reference metadata (PubMed IDs, DOIs, titles, authors)
-- **Data Merging**: Intelligent merging of peptide and reference data
-- **CSV Export/Import**: Save and load processed datasets
+- **UniProt & PubMed API Integration**: Automated data extraction from protein databases and literature
+- **GPT-4 Bioactivity Classification**: AI-powered classification of peptides into MBPDB function categories
+- **MBPDB Matching**: Automatic comparison with existing database entries to identify novel peptides
+- **Data Processing Pipeline**: Complete workflow from protein lists to export-ready CSV files
 
-### 🚧 In Progress / Planned Features
+### 🚧 Planned
 
-- **AI Text Analysis**: GPT-4 integration for bioactivity classification (requires OpenAI API key)
-- **Comprehensive Protein Lists**: Expansion to additional species (sheep, goat, pig, yak, rabbit, donkey, camel, buffalo)
-- **PubMed Keyword Searches**: Automated searches using predefined keywords
-- **Peptide-based PubMed Searches**: Use MBPDB peptides as keywords to find new references
-- **IC50 and PTM Extraction**: Extract quantitative data from literature
-- **MBPDB Upload Format**: Generate TSV files formatted for MBPDB upload
-- **Documentation Tables**: Generate audit trails for bioactivity reclassifications
-
-## Methodology
-
-### Literature Search
-
-1. **UniProt Search**: Query UniProt API using protein IDs from curated milk protein lists
-2. **PubMed Integration**: Fetch reference details (abstracts, titles, authors, DOIs) for peptides with PubMed IDs
-3. **Future**: Keyword-based PubMed searches and peptide-based reference discovery
-
-### Text Extraction
-
-- Extract peptide sequences, intervals, and descriptions from UniProt XML
-- Associate peptides with biological functions based on evidence keys
-- Retrieve and parse PubMed metadata for references
-
-### Text Analysis (Planned)
-
-- AI-powered bioactivity classification using GPT-4
-- Legitimacy assessment of bioactivity claims
-- Classification into existing MBPDB function categories
-- Extraction of quantitative data (IC50, inhibition types, etc.)
-
-### Data Compilation
-
-- Merge peptide and reference data into structured DataFrames
-- Compare with existing MBPDB entries to identify novel peptides
-- Export results in MBPDB-compatible formats
-
-## Current Status
-
-### Completed ✅
-
-- [x] UniProt API integration and data extraction
-- [x] PubMed API integration for reference metadata
-- [x] Peptide-function association logic
-- [x] Data merging and processing pipeline
-- [x] CSV export/import functionality
-- [x] Demo notebook with example workflow
-
-### In Progress 🚧
-
-- [ ] GPT-4 integration for bioactivity classification
-- [ ] Comprehensive protein lists for all MBPDB species
-- [ ] PubMed keyword search automation
-- [ ] IC50 and PTM data extraction
-- [ ] MBPDB upload format generation
-
-### Future Work 🔮
-
-- [ ] Custom LLM trained on bioactive peptide literature
-- [ ] Natural language query interface
-- [ ] Autonomous AI agent for PubMed article discovery
-- [ ] Post-transcriptional modification peptide support
-- [ ] Web application integration
-- [ ] Macro analysis tools for database insights
+- Additional species protein lists (sheep, goat, etc.)
+- PubMed keyword search automation
+- Quantitative data extraction (IC50, PTM)
+- Direct MBPDB upload format generation
 
 ## Dependencies
 
-See `requirements.txt` for complete list. Key dependencies:
+Key dependencies: `biopython`, `requests`, `pandas`, `numpy`, `openai`, `python-dotenv`, `jupyter`
 
-- **biopython**: PubMed API access
-- **requests**: HTTP requests for UniProt API
-- **pandas**: Data manipulation and analysis
-- **numpy**: Numerical operations
-- **openai**: GPT-4 API access (optional, for AI features)
-- **jupyter**: Notebook environment
+See `requirements.txt` for complete list and versions.
 
 ## Notes
 
-### Important Compatibility Notes
-
-- **OpenAI API**: The notebook uses the legacy OpenAI API format. For `openai>=1.0.0`, you'll need to update the API calls (see OpenAI migration guide).
-
-### Data Files
-
-- `data/exported_data.tsv`: Current MBPDB export for comparison
-- `protein_lists/*.fasta`: FASTA files with protein IDs (format: `>sp|PROTEIN_ID|...`)
-- Output CSV files are saved in the `data/` directory
+- **API Requirements**: OpenAI API key required for GPT classification. PubMed email configured via `.env` file.
+- **Input Files**: Load protein lists from `protein_lists/` directory and MBPDB export from `data/exported_data.tsv`
+- **Output Files**: Generated CSV files are saved to `data/` with timestamped filenames
+- **Performance**: ~2 seconds per protein (UniProt), ~1 second per row (PubMed), variable for GPT classification
 
 ## Contributing
 
 This project is part of ongoing research to expand the MBPDB. For questions or contributions, please contact the project maintainers.
-
-## License
-
-[Specify license if applicable]
 
 ## References
 
@@ -238,6 +142,6 @@ For questions about this project or the MBPDB, please contact:
 
 ---
 
-**Last Updated**: 2024
-**Version**: 1.0 (Demo)
+**Last Updated**: November 2025
+**Version**: 2.0 (Demo)
 
